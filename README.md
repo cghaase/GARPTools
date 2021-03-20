@@ -1,4 +1,6 @@
 # GARPTools
+**NOTE: When installing from GitHub, make sure to use "devtools::install_github("cghaase/GARPTools", build_vignettes = TRUE)" to install vignettes.**
+
 GARPTools: software for data prep and model evaluation for GARP species distribution modeling
 
 The GARPTools package provides tools to prepare data for input into the desktop version of GARP 
@@ -18,4 +20,3 @@ In particular, the package GARPTools was designed to support:
 •	Assessment of model accuracy with AUC, commission, and omission metrics
 •	Plotting of the Receiver Operating Characteristic curve
 •	Plotting the range rules of variables output by DesktopGARP
-
