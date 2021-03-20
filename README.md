@@ -1,0 +1,2 @@
+# GARPTools
+The GARPTools package provides tools to prepare data for input into the desktop version of GARP (the genetic algorithm for rule-set prediction) and for the evaluation of the accuracy of output models. GARP is a software package for biodiversity and ecological research that allows the user to predict and analyze wild species distributions. GARP is a presence-only genetic algorithm that models species' potential geographic distributions through an iterative process of training and testing that occurs through resampling and replacement of input data.
