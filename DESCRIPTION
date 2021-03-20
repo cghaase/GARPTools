@@ -1,0 +1,23 @@
+Package: GARPTools
+Title: Tools for GARP Data Prep and Model Evaluation
+Version: 1.1.0
+Authors@R: 
+    person(given = "Catherine",
+           family = "Haase",
+           role = "cre",
+           email = "cghaase@gmail.com",
+           comment = "ORCID = 0000-0002-7682-0625")
+Description: The GARPTools package provides tools to prepare data for input into the desktop version of GARP (the genetic algorithm for rule-set prediction) and for the evaluation of the accuracy of output models. GARP is a software package for biodiversity and ecological research that allows the user to predict and analyze wild species distributions. GARP is a presence-only genetic algorithm that models species' potential geographic distributions through an iterative process of training and testing that occurs through resampling and replacement of input data.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1.9001
+Imports: 
+    rmarkdown,
+    sp,
+    ggplot2,
+    knitr,
+    raster
+VignetteBuilder: knitr
