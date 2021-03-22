@@ -45,7 +45,7 @@ library(GARPTools)
 install.packages(devtools)
 library(devtools)
 
-install_github("cghaase/GARPTools", build_vignettes = TRUE)
+install_github("cghaase/GARPTools")
 library(GARPTools)
 ```
 
