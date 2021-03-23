@@ -67,7 +67,7 @@ aucGARP <- function(n, x, points){
     cutpoints$d[i] <- ifelse(cutpoints[i,1] == 0, (sum(cutpoints$no.taxa.pixels) - cutpoints$no.taxa.pixels[i]), (cutpoints$d[i-1] - cutpoints$no.taxa.pixels[i]))
   }
 
-  #Calculate sensitivity (true positives) and 1-specificity (false positives)
+  #Calculate sensitivity and 1-specificity
   for(i in 1:dim(cutpoints)[1]){
     cutpoints$sensitivity[i]     <- cutpoints$a[i]/(cutpoints$a[i] + cutpoints$c[i])
     cutpoints$one.specificity[i] <- 1-(cutpoints$b[i]/(cutpoints$b[i] + cutpoints$d[i]))
