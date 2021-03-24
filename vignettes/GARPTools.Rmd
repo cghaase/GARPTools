@@ -66,7 +66,7 @@ wtdeer_locations
 We also provide example environmental layers to use in GARP, available as a raster stack:
 ```{r comment = "R>", echo = -1}
 library(GARPTools)
-data("env_layers")
+alt <- raster(system.file("extdata/env_layers", package="raster"), band = 1)
 env_layers
 ```
 
