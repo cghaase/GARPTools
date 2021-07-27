@@ -237,19 +237,19 @@ Table: Model rankings from a GARP output.
 There are four types (range, negated range, logit and atomic) of if-then genetic rules considering different combinations of environmental variables in GARP. Each model includes 50 rules which predict the presence and absence of the species for each pixel. The rule sets .txt file recording all 50 rules for each GARP model will be generated automatically by GARP.
 
 ## 4.1. Get the dominant rules for best subsets
-Dominant rules for each model are defined as the subset of rules that together predict over 90% of the landscapes. The `FindModRule` function is used to extract a table of dominant rules for the best subsets.
+Dominant rules for each model are defined as the subset of rules that together predict over 90% of the landscapes. The `findModRules` function is used to extract a table of dominant rules for the best subsets.
 
 First define a vector object which contains the directories of best subsets for each species and a string of the primary directory for ruleset grids, then run the function:
 
 ```{r eval = FALSE, comment = "R>"}
-modelRule <- FindModRule(pathA = "C:/GARP/runs/", pathB = "C:/GARP/BestSubsets/")
+modelRule <- findModRules(pathA = "C:/GARP/runs/", pathB = "C:/GARP/BestSubsets/")
 ```
 
 ## 4.2. Extract dominant rules for the best subset models from Desktop GARP
-Set the directory to where the rule sets .txt file is saved and define the directory for environmental layers. The Boolean argument "project" depends on whether the GARP results are projected to the landscape or not. The `ExtractRules` function will extract the dominant range rules and logit rules for each GARP model. Argument `table` is produced by `FindModRule`. **Note:** The environmental layers must be in ESRI ASCII raster format.
+Set the directory to where the rule sets .txt file is saved and define the directory for environmental layers. The Boolean argument "project" depends on whether the GARP results are projected to the landscape or not. The `extractRules` function will extract the dominant range rules and logit rules for each GARP model. Argument `table` is produced by `findModRules`. **Note:** The environmental layers must be in ESRI ASCII raster format.
 
 ```{r eval = FALSE, comment = "R>"}
-rangelogit <- ExtractRules("C:/GARP/RuleSets.txt", 
+rangelogit <- extractRules("C:/GARP/RuleSets.txt", 
                            table = modelRule, 
                            pathA = "C:/GARP/resampled/", 
                            pathB = "C:/GARP/runs/",
@@ -263,7 +263,7 @@ write.csv(rangelogit, "C:/GARP/RangeLogit.csv")
 ```
 
 ## 4.3. Calculate the median maximum and median minimum values for each environmental variable
-Set a vector object the directories and full file names for the extracted rule .csv files created by function ExtractRules. The `getMedMinMax` function is used to get the median maximum and minimum of each environmental variable for dominant rules:
+Set a vector object the directories and full file names for the extracted rule .csv files created by function `extractRules`. The `getMedMinMax` function is used to get the median maximum and minimum of each environmental variable for dominant rules:
 
 ```{r eval = FALSE, comment = "R>"}
 MedMinMax <- getMedMinMax(pathA = "C:/GARP/RangeLogit.csv", 
@@ -273,14 +273,14 @@ MedMinMax <- getMedMinMax(pathA = "C:/GARP/RangeLogit.csv",
 ## 4.4. Rescale the median maximum and median minimum values from 0.0 to 1.0
 The median range of the environmental variables indicates the role they play to predict the species distribution in the experiment. Rescaling the median maximum and minimum values to 0-1 allows making the comparison without the units.
 
-The argument `file` in the `Rescale` function is a  data.frame of the original median minimum and median maximum values produced by the `getMedMinMax` function for each environment variable:
+The argument `file` in the `rescale` function is a  data.frame of the original median minimum and median maximum values produced by the `getMedMinMax` function for each environment variable:
 
 ```{r eval = FALSE, comment = "R>"}
-recaledM <- Rescale(MedMinMax) 
+recaledM <- rescale(MedMinMax) 
 ```
 
 ## 4.5. Visualize the median range for the environmental variables
-The `plotRange` function plots the median range for the environmental variables used in the GARP experiments. The argument `file` in the function should b a data.frame of the rescaled ranges of the median minimum and median maximum values for each environment variable, which can be produced by `Rescale` function:
+The `plotRange` function plots the median range for the environmental variables used in the GARP experiments. The argument `file` in the function should b a data.frame of the rescaled ranges of the median minimum and median maximum values for each environment variable, which can be produced by `rescale` function:
 
 ```{r eval = FALSE, comment = "R>"}
 plotRange(rescaledM, colour = "purple", n = 15, 
@@ -292,17 +292,17 @@ plotRange(rescaledM, colour = "purple", n = 15,
 Figure 6: The median range for the environmental variables used in the GARP experiments.
 
 # 5. Variable selection by prevalence and median range
-Without a full understanding of the ecology of the species, it is hard to decide the environmental variables to be included or excluded when modelling the spatial distribution. Here, we introduce a method for variable selection typically for GARP model, based on the analysis of the prevalence and median range of the environmental covariates. The rescaled median ranges for environmental variables are calculated by `Rescale` function. In addition, the prevalence of each environmental variable in the dominant presence rules of the ten best subsets is defined as the times of the environmental variable shown in the dominant presence rules divided by the total number of dominant presence rules. The variables with less contribution to the GARP models are the ones with wide median range and low prevalence. Thus, the index of unimportance for GARP model is defined as the following equation:
+Without a full understanding of the ecology of the species, it is hard to decide the environmental variables to be included or excluded when modelling the spatial distribution. Here, we introduce a method for variable selection typically for GARP model, based on the analysis of the prevalence and median range of the environmental covariates. The rescaled median ranges for environmental variables are calculated by `rescale` function. In addition, the prevalence of each environmental variable in the dominant presence rules of the ten best subsets is defined as the times of the environmental variable shown in the dominant presence rules divided by the total number of dominant presence rules. The variables with less contribution to the GARP models are the ones with wide median range and low prevalence. Thus, the index of unimportance for GARP model is defined as the following equation:
 
 *Unimportance* = (1 - *prevalence*) * *range*
 
 The multiplication of the median range and the absence of the environmental layers in dominant presence rules can exclude the variables with 1) high prevalence and wide median range; and 2) low prevalence and narrow median range. The variable with high prevalence suggests that most rules in the ten best subsets of GARP models use this variable to predict the presence of the species. The variable with narrow median range suggests that the survival of species depends on a specific environmental condition. Therefore, the higher value the index of unimportance is, the less contribution the environmental variable will have on the GARP models.
 
 ## 5.1 Calculate the total number of the dominant presence rules in the ruleset 
-Set the directory to where the rule sets .txt file is saved. Set pathA as a string of the directory for environmental layers and pathB as a string of the primary directory for ruleset grids. The Boolean argument `project` depends on whether the GARP results are projected to the landscape or not.  The `TotPresRules` function will return the total number of the dominant presence rules in the ruleset file. The argument "table" is produced by "FindModRul" function. **Note:** the environmental layers must be in ESRI ASCII raster format.
+Set the directory to where the rule sets .txt file is saved. Set pathA as a string of the directory for environmental layers and pathB as a string of the primary directory for ruleset grids. The Boolean argument `project` depends on whether the GARP results are projected to the landscape or not.  The `totPresRules` function will return the total number of the dominant presence rules in the ruleset file. The argument "table" is produced by `findModRules` function. **Note:** the environmental layers must be in ESRI ASCII raster format.
 
 ```{r eval = FALSE, comment = "R>"}
-PreNo <- TotPresRules(file = "C:/GARP/RuleSets.txt", 
+PreNo <- totPresRules(file = "C:/GARP/RuleSets.txt", 
                       table = modelRule, 
                       pathA = "C:/GARP/resampled/", 
                       pathB = "C:/GARP/runs/", 
@@ -310,10 +310,10 @@ PreNo <- TotPresRules(file = "C:/GARP/RuleSets.txt",
 ```
 
 ## 5.2 Get the prevalence of each environmental variable
-The prevalence indicates the frequency of each environmental variable shown in the dominant presence rules of the ten best subsets. Set `pathA` as a vector object the directories and full file names for the extracted rule .csv files created by function `ExtractRules`.  Set `pathB` as a string of the directory for environmental layers and `num` as the number of total dominant presence rules which can be generated by the `TotPresRules` function. The `Prevalence` function will return a data frame including the prevalence of each environmental variable in the dominant presence rules in the ten best subsets. **Note:** the environmental layers must be in ESRI ASCII raster format.
+The prevalence indicates the frequency of each environmental variable shown in the dominant presence rules of the ten best subsets. Set `pathA` as a vector object the directories and full file names for the extracted rule .csv files created by function `extractRules`.  Set `pathB` as a string of the directory for environmental layers and `num` as the number of total dominant presence rules which can be generated by the `totPresRules` function. The `prevalence` function will return a data frame including the prevalence of each environmental variable in the dominant presence rules in the ten best subsets. **Note:** the environmental layers must be in ESRI ASCII raster format.
 
 ```{r eval = FALSE, comment = "R>"}
-prevalence <- Prevalence(pathA = "C:/GARP/RuleSets.txt", 
+prevalence <- prevalence(pathA = "C:/GARP/RuleSets.txt", 
                          pathB = "C:/GARP/runs/", num = 10)
 ```
 
@@ -326,10 +326,10 @@ write.csv(prevalence, "C:/GARP/Prevalence.csv")
 ## 5.3 Calculate the unimportance index of each environmental variable for variable selection.
 The normalized unimportance index is calculated based on the analysis of median range and prevalence of the environmental variables in the dominant presence rules of the ten best subsets in GARP results. This index indicates the relative contribution of each environmental variable in the GARP models. 
 
-Set `table1` as a data frame recording the prevalence of environmental variables generated by `Prevalence` function and `table2` as a data frame with the rescaled median range for each environment variable generated by `Rescale` function. The `UnimportIdx` function will calculate the normalized unimportance index for each environmental variable.
+Set `table1` as a data frame recording the prevalence of environmental variables generated by `prevalence` function and `table2` as a data frame with the rescaled median range for each environment variable generated by `Rescale` function. The `unimportIdx` function will calculate the normalized unimportance index for each environmental variable.
 
 ```{r eval = FALSE, comment = "R>"}
-UnimportIndex <- UnimportIdx(prevalence, rescaled)
+UnimportIndex <- unimportIdx(prevalence, rescaled)
 ```
 
 Save the table of Unimportance Index as a .csv file:

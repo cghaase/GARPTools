@@ -23,7 +23,7 @@
 rasterPrep <- function(file.path, res.raster = NULL, cells = NULL, mask = NULL, rescale = FALSE, output.path){
 
   #List all rasters in folder and create table
-  list.rasters <- list.files(path = paste(file.path), full.names=TRUE)
+  list.rasters <- list.files(path = paste(file.path), full.names=TRUE, pattern=".asc$")
 
   #Remove info folder
   for(i in 1:length(list.rasters)){
