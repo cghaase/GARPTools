@@ -26,16 +26,16 @@ findModRules <- function(pathA,pathB){
   bestmodel<-c()
   rsetlist<-list.files(path=rsetPridir, pattern = 'grid')
   #find the rset for best subsets, do the zonal stats, and find the rules covered 90%
-  for (i in seq(1:length(bsdirlist))){
+  for (i in 1:length(bsdirlist)){
     bslist <- list.files(path = bsdirlist[i],pattern='task', all.files = TRUE, full.names = FALSE)
-    for (j in seq(1: length(bslist))){
+    for (j in 1: length(bslist)){
       if (grepl('\\.[a-z]',bslist[j])==FALSE){
         best <- regmatches(bslist[j], regexpr("\\d+", bslist[j]))
         best <- as.numeric(best)
-        for (l in seq(1:length(rsetlist))){
+        for (l in 1:length(rsetlist)){
           rsetdir <- paste(rsetPridir,rsetlist[l],sep = '')
           rsetFile <- list.files(path = rsetdir, pattern = 'rset_\\d+_0')
-          for (k in seq(1:length(rsetFile))){
+          for (k in 1:length(rsetFile)){
             if (grepl('\\.[a-z]',rsetFile[k])==FALSE){
               rset <- regmatches(rsetFile[k], regexpr('\\d+_',rsetFile[k]))
               rset <- regmatches(rset, regexpr('\\d+',rset))
@@ -49,7 +49,7 @@ findModRules <- function(pathA,pathB){
                 dbf<-data.frame(dbf)
                 time=0
                 total=0
-                for (m in seq(1:length(dbf$length))){
+                for (m in 1:length(dbf$length)){
                   total=total+dbf$length[m]
                   if (total<=0.9*sum(dbf$length)){
                     if (dbf$zones[m] != 0){

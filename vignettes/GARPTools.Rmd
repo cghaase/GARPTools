@@ -50,68 +50,59 @@ library(GARPTools)
 ```
 
 Read in the the white-tailed deer species data from the package in data.frame format:
-```{r comment = "R>" , echo = -1}
-library(GARPTools)
+```{r comment = "R>" }
 data("wtdeer_df")
 head(wtdeer_df)
 ```
 
 It is also available as a shapefile:
-```{r comment = "R>", echo = -1}
-library(GARPTools)
+```{r comment = "R>"}
 data("wtdeer_locations")
 wtdeer_locations
 ```
 
-We also provide example environmental layers to use in GARP, available as a raster stack:
-```{r comment = "R>", echo = -1}
-library(GARPTools)
-data("env_layers")
-env_layers
+We also provide example environmental layers (altitude [alt], annual mean tmeperature [bio_1], annual precipitation [bio_12]) to use in GARP, available as a raster stack (env_layers.TIF) or individually as ASCI grid files in the "extdata" folder:
+```{r comment = "R>", message=FALSE}
+library(raster)
+alt    <- raster(system.file("extdata/alt.asc",    package="GARPTools"))
+bio_1  <- raster(system.file("extdata/bio_1.asc",  package="GARPTools"))
+bio_12 <- raster(system.file("extdata/bio_12.asc", package="GARPTools"))
+
 ```
 
-Plotting the raster stack allows for the visualization of all environmental layers (Figure 1).
-```{r fig.height=2, fig.align = "center", fig.cap = "Three example environmental layers used in GARP experimental runs.",echo = -1}
-library(raster)
-plot(env_layers, nc = 3)
+Plotting the rasters allows for the visualization of all environmental layers (Figure 1).
+```{r fig.height=2, fig.align = "center", fig.cap = "Three example environmental layers used in GARP experimental runs."}
+par(mfrow = c(1,3))
+plot(alt,    main = "Altitude (m)")
+plot(bio_1,  main = "Annual Mean Temperature (C)")
+plot(bio_12, main = "Annual Precipitation (mm)")
 ```
 
 Now add the boundary of the sampling area and sampling points to the altitude layer (Figure 2).
-```{r comment = "R>", echo = -1, fig.width=4, fig.height=3, fig.align = "center", fig.cap = "Altitude of sampling area with sampling points."}
+```{r comment = "R>", echo = -1, fig.width=4, fig.height=3, fig.align = "center", fig.cap = "Altitude (m) of sampling area with sampling points."}
 par(mar=c(3,2,2,1))
 data("nc_boundary")
-plot(env_layers[[1]])
+plot(alt)
 plot(nc_boundary, add = T)
+points(wtdeer_locations)
 ```
+
 **GARPTools** provides tools to prepare the data files for the desktop version of GARP with functions that will resample and crop environmental layers to study areas and split presence locations into training and testing data sets.
 
 ## 2.1. Resample raster files and convert to ASCII
 In order for GARP to use the environmental layers in its analysis, the rasters must be of the same spatial resolution and extent. The `rasterPrep` function resamples the rasters used in the analysis to the same spatial resolution (i.e. cell size) and extent of a sample raster. The user can define the sample raster using the `res.raster` argument or define the number of cells in a raster row using `cells`; both default as `NULL`. If neither argument is used, the raster with the largest resolution will be defined as the sample raster and all other rasters will be resampled to that spatial resolution. The spatial extent of the rasters can also be defined using the `mask` argument, which reads in a shapefile of the user-defined study area. The rasters are written as ".asc" files to ensure the headers of the files are in the correct format for GARP. **NOTE:** The rasterPrep function may take some time if the spatial resolution is small or there are many rasters to resample. Make sure ONLY the rasters that need to be resampled are in the "raster" folder specified by the `file.path` argument.
 
-Here, we first write the provided rasters into a raster folder for example and then run the resample function.
-```{r comment = "R>", warning = FALSE, message = FALSE, results = "hide"}
-writeRaster(env_layers[[1]], 
-            filename = "C:/GARP/rasters/alt.asc", 
-            format = "ascii", 
-            overwrite = TRUE)
-writeRaster(env_layers[[2]], 
-            filename = "C:/GARP/rasters/bio_1.asc", 
-            format = "ascii", 
-            overwrite = TRUE)
-writeRaster(env_layers[[3]], 
-            filename = "C:/GARP/rasters/bio_12.asc", 
-            format = "ascii", 
-            overwrite = TRUE)
-
-rasterPrep(file.path = "C:/GARP/rasters", 
+Here, we provide the rasters into a "raster" folder and run the resample function to save the resampled rasters into a new folder. Note that a Warning will be provided if the projection of any raster is missing:
+```{r comment = "R>", message=FALSE, warning=FALSE, results = "hide"}
+rasterPrep(file.path = system.file("extdata/rasters", package="GARPTools"), 
            mask = nc_boundary, 
-           output.path = "C:/GARP/resampled/")
+           output.path = system.file("extdata/resampled/", package="GARPTools"))
 ```
 
 ## 2.2. Filter multiple points per raster pixel
 GARP records the instance of a presence location in a raster cell, and therefore does not distinguish between multiple locations within a single cell. The `centroid` function returns the centroid location of all grid cells that contain a presence location, which circumvents multiple locations. The function uses the cell size and extent of user-defined raster (after rasters are resampled in `rasterPrep`) to generate centroid coordinates of all cells that contain presence locations that can then be used in GARP.
 ```{r comment = "R>"}
-alt_resample <- raster("C:/GARP/resampled/alt_resample.asc")
+alt_resample <- raster(system.file("extdata/resampled/alt_resample.asc", package="GARPTools"))
 
 wtdeer_centroids <- centroid(x = alt_resample, 
                              points = wtdeer_locations, 
@@ -134,9 +125,14 @@ A GARP experiment is by design a random walk, described in detail in Stockwell [
 By setting `p` as 0.75 and `iterations` as 10, the `splitData` function randomly selects 75% of the presence locations to subset the initial data set to create a training set of points and repeats this 10 times. The other 25% of the points are reserved for testing post-GARP. By setting `output = TRUE` and specifying an output path, all 10 sets of training and testing points are saved to file. 
 
 It is important to include a root file name that identifies the species, as "test" and "train" will be attached the the file name along with the iteration number (i.e "wtdeer1_test")
-```{r comment = "R>"}
-splitData(points = wtdeer_centroids, p = 0.75, type = "all", iterations = 10, 
-          output = TRUE, output.path = "C:/GARP/", output.name = "wtdeer")
+```{r comment = "R>", eval=FALSE}
+splitData(points = wtdeer_centroids, 
+          p = 0.75, 
+          type = "all", 
+          iterations = 10, 
+          output = TRUE, 
+          output.path = system.file("extdata/", package="GARPTools"), 
+          output.name = "wtdeer")
 ```
 
 The training data must be a MS Excel 97-2003 Worksheet (.xls) in order to work with GARP. The `splitData` function will output .csv files, thus the user is encouraged to convert to .xls before importing into GARP.
@@ -147,26 +143,9 @@ The area under the receiver operating characteristic (ROC) curve (AUC) can be ca
 ## 3.1. Sum best subset models into a single prediction raster
 Collapsing the 10 individual binary presence/absence ESRI grids from the BestSubsets folder of the projected distribution from a single GARP experiment creates a summed raster that represents the number of models that agree on the presence of a species for each pixel. 
 
-First read in the rasterStack of the output ESRI grids available in the GARPTools package and write them into a "BestSubsets" folder to simulate the output from GARP:
-
+We have provided an example output from GARP in a "BestSubsets". We can sum the best subset model outputs into a single summed raster using the `sumRasters` function:
 ```{r comment = "R>"}
-data("tasks_layers")
-
-writeRaster(tasks_layers[[1]], "C:/GARP/BestSubsets/task1.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[2]], "C:/GARP/BestSubsets/task2.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[3]], "C:/GARP/BestSubsets/task3.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[4]], "C:/GARP/BestSubsets/task4.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[5]], "C:/GARP/BestSubsets/task5.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[6]], "C:/GARP/BestSubsets/task6.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[7]], "C:/GARP/BestSubsets/task7.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[8]], "C:/GARP/BestSubsets/task8.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[9]], "C:/GARP/BestSubsets/task9.asc",  overwrite = TRUE)
-writeRaster(tasks_layers[[10]],"C:/GARP/BestSubsets/task10.asc", overwrite = TRUE)
-```
-
-Then sum the best subset model outputs into a single summed raster using the `sumRasters` function:
-```{r comment = "R>"}
-r.sum <- sumRasters("C:/GARP/BestSubsets/")
+r.sum <- sumRasters(system.file("extdata/BestSubsets/", package="GARPTools"))
 ```
 The `summary` of the summed raster shows that the minimum value is 0 and the maximum is 10:
 
@@ -182,18 +161,18 @@ freq(r.sum)
 ## 3.2. Calculate the AUC of the ROC curve 
 To calculate the AUC for a discrete variable such as presence, individual cutpoints of the best subset raster act as thresholds of the ROC curve. By calculating the AUC for a finite number of potential thresholds (here defined by the `n` argument), it's equivalent to calculating the non-parametric Wilcoxon's statistic. This is derived from McNyset [(2005)](#anchor2).
 
-AUC is calculated by overlaying one of the testing points (`points` argument) withheld from the sample data using the 'splitData' function on top of the summed raster from the `sumRasters` function (`x` argument):
+AUC is calculated by overlaying one of the testing points (`points` argument) withheld from the sample data using the `splitData` function on top of the summed raster from the `sumRasters` function (`x` argument). Here we plot an example test shapefile, "wtdeer_test1.shp":
 ```{r echo = -1, message = FALSE, warning = FALSE, fig.width=4, fig.height=3, fig.align = "center", fig.cap = "Best subset of models output by DesktopGARP with testing points."}
 par(mar=c(2,2,2,1))
-test.pts <- shapefile("C:/GARP/wtdeer1_test.shp")
+data("wtdeer1_test")
 plot(r.sum)
 plot(nc_boundary, add = TRUE)
-points(test.pts, pch = 16)
+points(wtdeer1_test, pch = 16)
 ```
 The pixel value at each testing point is extracted and used to define the confusion matrix (see `confuseMatrix`) and calculate the AUC within the `aucGARP` function, where `n` is the number of models in the BestSubsets folder output by GARP:
 ```{r echo = -1, comment = "R>", fig.width=4, fig.height=4, fig.align = "center", fig.cap = "Plot of the Receiver Operating Characteristic (ROC) curve."}
 par(mar=c(2,2,2,1))
-aucGARP(n = 10, x = r.sum, points = test.pts)
+aucGARP(n = 10, x = r.sum, points = wtdeer1_test)
 ```
 The ROC plot (Figure 5), standard error and z-value associated with the AUC, and the Wilcoxon test statistic can also be called separately with their respective functions.
 
@@ -202,7 +181,7 @@ However, AUC can often undervalue certain niche models, such as those provided b
 `AUCratio` allows the user to define the error parameter, `E`, which refers to the amount of error admissible along the true-positive (sensitivity) axis, i.e., how much omission error is accetable. When highest-quality data are used, `E`= 0, and when occurrence data are known to include high amounts of error, `E` can range from 5-20%:
 ```{r echo = -1, comment = "R>", fig.width=4, fig.height=4, fig.align = "center", fig.cap = "Plot of the Modified Receiver Operating Characteristic (ROC) curve."}
 par(mar=c(2,2,2,1))
-aucRatio(n = 10, x = r.sum, points = test.pts, E = 0.20)
+aucRatio(n = 10, x = r.sum, points = wtdeer1_test, E = 0.20)
 
 ```
 
@@ -211,8 +190,9 @@ aucRatio(n = 10, x = r.sum, points = test.pts, E = 0.20)
 Total and average commission and omission can be calculated by the confusion matrix. Total commission is calculated as the total number of pixels predicted present across all ten models, divided by the total number of pixels in the study area. Average commission is calculated as the average of the total number of cells predicted present, divided by the total number of pixels within the study area that are unoccupied on a model-by-model basis for each of the 10 models of the best subset folder (directed in the `file.path` argument): 
 
 ```{r comment = "R>"}
-commissionGARP(n = 10, x = r.sum, points = test.pts, file.path = "C:/GARP/BestSubsets/")
-omissionGARP(n = 10, x = r.sum, points = test.pts)
+commissionGARP(n = 10, x = r.sum, points = wtdeer1_test, 
+               file.path = system.file("extdata/BestSubsets/", package="GARPTools"))
+omissionGARP(n = 10, x = r.sum, points = wtdeer1_test)
 ```
 
 Now that we have the AUC score, the AUC ratio, the commission and omission metrics, and the z-scores and standard error, we can produce a table that ranks the 10 models from highest to lowest AUC scores:
@@ -242,32 +222,40 @@ Dominant rules for each model are defined as the subset of rules that together p
 First define a vector object which contains the directories of best subsets for each species and a string of the primary directory for ruleset grids, then run the function:
 
 ```{r eval = FALSE, comment = "R>"}
+<<<<<<< HEAD
 modelRule <- findModRules(pathA = "C:/GARP/runs/", pathB = "C:/GARP/BestSubsets/")
+=======
+modelRule <- FindModRule(pathA = "~/runs/", pathB = "~/BestSubsets/")
+>>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
 ```
 
 ## 4.2. Extract dominant rules for the best subset models from Desktop GARP
 Set the directory to where the rule sets .txt file is saved and define the directory for environmental layers. The Boolean argument "project" depends on whether the GARP results are projected to the landscape or not. The `extractRules` function will extract the dominant range rules and logit rules for each GARP model. Argument `table` is produced by `findModRules`. **Note:** The environmental layers must be in ESRI ASCII raster format.
 
 ```{r eval = FALSE, comment = "R>"}
+<<<<<<< HEAD
 rangelogit <- extractRules("C:/GARP/RuleSets.txt", 
+=======
+rangelogit <- ExtractRules("~/RuleSets.txt", 
+>>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
                            table = modelRule, 
-                           pathA = "C:/GARP/resampled/", 
-                           pathB = "C:/GARP/runs/",
+                           pathA = "~/resampled/", 
+                           pathB = "~/runs/",
                            project = FALSE) 
 ```
 
 Save the table of extracted rules as a .csv file:
 
 ```{r eval = FALSE, comment = "R>"}
-write.csv(rangelogit, "C:/GARP/RangeLogit.csv") 
+write.csv(rangelogit, "~/RangeLogit.csv") 
 ```
 
 ## 4.3. Calculate the median maximum and median minimum values for each environmental variable
 Set a vector object the directories and full file names for the extracted rule .csv files created by function `extractRules`. The `getMedMinMax` function is used to get the median maximum and minimum of each environmental variable for dominant rules:
 
 ```{r eval = FALSE, comment = "R>"}
-MedMinMax <- getMedMinMax(pathA = "C:/GARP/RangeLogit.csv", 
-                          pathB = "C:/GARP/resampled/") 
+MedMinMax <- getMedMinMax(pathA = "~/RangeLogit.csv", 
+                          pathB = "~/resampled/") 
 ```
 
 ## 4.4. Rescale the median maximum and median minimum values from 0.0 to 1.0
@@ -302,10 +290,14 @@ The multiplication of the median range and the absence of the environmental laye
 Set the directory to where the rule sets .txt file is saved. Set pathA as a string of the directory for environmental layers and pathB as a string of the primary directory for ruleset grids. The Boolean argument `project` depends on whether the GARP results are projected to the landscape or not.  The `totPresRules` function will return the total number of the dominant presence rules in the ruleset file. The argument "table" is produced by `findModRules` function. **Note:** the environmental layers must be in ESRI ASCII raster format.
 
 ```{r eval = FALSE, comment = "R>"}
+<<<<<<< HEAD
 PreNo <- totPresRules(file = "C:/GARP/RuleSets.txt", 
+=======
+PreNo <- TotPresRules(file = "~/RuleSets.txt", 
+>>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
                       table = modelRule, 
-                      pathA = "C:/GARP/resampled/", 
-                      pathB = "C:/GARP/runs/", 
+                      pathA = "~/resampled/", 
+                      pathB = "~/runs/", 
                       project = FALSE)
 ```
 
@@ -313,13 +305,18 @@ PreNo <- totPresRules(file = "C:/GARP/RuleSets.txt",
 The prevalence indicates the frequency of each environmental variable shown in the dominant presence rules of the ten best subsets. Set `pathA` as a vector object the directories and full file names for the extracted rule .csv files created by function `extractRules`.  Set `pathB` as a string of the directory for environmental layers and `num` as the number of total dominant presence rules which can be generated by the `totPresRules` function. The `prevalence` function will return a data frame including the prevalence of each environmental variable in the dominant presence rules in the ten best subsets. **Note:** the environmental layers must be in ESRI ASCII raster format.
 
 ```{r eval = FALSE, comment = "R>"}
+<<<<<<< HEAD
 prevalence <- prevalence(pathA = "C:/GARP/RuleSets.txt", 
                          pathB = "C:/GARP/runs/", num = 10)
+=======
+prevalence <- Prevalence(pathA = "~/RuleSets.txt", 
+                         pathB = "~/runs/", num = 10)
+>>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
 ```
 
 Save the table of the prevalence for environmental covariates as a .csv file:
 ```{r eval = FALSE, comment = "R>"}
-write.csv(prevalence, "C:/GARP/Prevalence.csv")
+write.csv(prevalence, "~/Prevalence.csv")
 ```
 
 
@@ -334,7 +331,7 @@ UnimportIndex <- unimportIdx(prevalence, rescaled)
 
 Save the table of Unimportance Index as a .csv file:
 ```{r eval = FALSE, comment = "R>"}
-write.csv(UnimportanceIndex,"C:/GARP/UnimportanceIndex.csv")
+write.csv(UnimportanceIndex,"~/UnimportanceIndex.csv")
 ```
 
 
