@@ -241,7 +241,8 @@ rangelogit <- extractRules(file = system.file("extdata/RuleSets.txt", package="G
 Save the table of extracted rules as a .csv file:
 
 ```{r comment = "R>"}
-write.csv(rangelogit, paste(system.file(package = "GARPTools"), "/extdata/RangeLogit.csv", sep=""))
+write.csv(rangelogit, paste(system.file(package = "GARPTools"),
+                            "/extdata/RangeLogit.csv", sep=""))
 
 ```
 
@@ -285,10 +286,13 @@ The multiplication of the median range and the absence of the environmental laye
 Set the directory to where the rule sets .txt file is saved. Set pathA as a string of the directory for environmental layers and pathB as a string of the primary directory for ruleset grids. The Boolean argument `project` depends on whether the GARP results are projected to the landscape or not.  The `totPresRules` function will return the total number of the dominant presence rules in the ruleset file. The argument "table" is produced by `findModRules` function. **Note:** the environmental layers must be in ESRI ASCII raster format.
 
 ```{r comment = "R>"}
-PreNo <- totPresRules(file = system.file("extdata/RuleSets.txt", package="GARPTools"),
+PreNo <- totPresRules(file = system.file("extdata/RuleSets.txt", 
+                                         package="GARPTools"),
                       table = modelRule,
-                      pathA = system.file("extdata/resampled/", package="GARPTools"),
-                      pathB = system.file("extdata/runs/", package="GARPTools"),
+                      pathA = system.file("extdata/resampled/", 
+                                          package="GARPTools"),
+                      pathB = system.file("extdata/runs/", 
+                                          package="GARPTools"),
                       project = FALSE) 
 
 ```
@@ -299,14 +303,17 @@ The prevalence indicates the frequency of each environmental variable shown in t
 ```{r comment = "R>"}
 
 
-prevalence <- prevalence(pathA = paste(system.file(package = "GARPTools"), "/extdata/RangeLogit.csv", sep=""), 
-                         pathB = system.file("extdata/resampled/", package="GARPTools"),
+prevalence <- prevalence(pathA = paste(system.file(package = "GARPTools"), 
+                                       "/extdata/RangeLogit.csv", sep=""), 
+                         pathB = system.file("extdata/resampled/", 
+                                             package="GARPTools"),
                          num = 10)
 ```
 
 Save the table of the prevalence for environmental covariates as a .csv file:
 ```{r comment = "R>"}
-write.csv(prevalence, paste(system.file(package = "GARPTools"), "/extdata/Prevalence.csv", sep=""))
+write.csv(prevalence, paste(system.file(package = "GARPTools"), 
+                            "/extdata/Prevalence.csv", sep=""))
 ```
 
 
@@ -323,7 +330,8 @@ UnimportIndex <- unimportIdx(prevalence, rescaledM)
 
 Save the table of Unimportance Index as a .csv file:
 ```{r comment = "R>"}
-write.csv(UnimportIndex, paste(system.file(package = "GARPTools"), "/extdata/UnimportanceIndex.csv", sep=""))
+write.csv(UnimportIndex, paste(system.file(package = "GARPTools"), 
+                               "/extdata/UnimportanceIndex.csv", sep=""))
 ```
 
 
