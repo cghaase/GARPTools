@@ -129,9 +129,6 @@ extractRules <- function(file, table, pathA, pathB, project){
                         rdir1 <- paste(rdir1, "/", temp1[1], sep = '')
                         rdir1 <- paste(rdir1, '.asc', sep = '')
                         PhyPa <- raster(rdir1)
-                        #rdir2 <- 'R:/SEER_Lab/Griffin_GG19/GARP_test/m_arvalis/run1/GARPrun/run8_10'
-                        #rdir2 <- 'C:/Users/yangann1/Dropbox/yang_python/ruleset_writing/GARPrun/garp2_allvariables/'
-
                         #rdir2 <- paste(rsetPridir, '/', sep='')
                         rdir2 <- rsetPridir
                         files <- list.files(rdir2, pattern = 'grid')
