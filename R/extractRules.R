@@ -126,7 +126,7 @@ extractRules <- function(file, table, pathA, pathB, project){
                         #rdir1 <- 'C:/Users/yangann1/Dropbox/yang_python/ruleset_writing/Grids'  #Dir on Win
                         #rdir1 <- paste(sampledir, '/',sep = '')
                         rdir1 <- sampledir
-                        rdir1 <- paste(rdir1, temp1[1], sep = '')
+                        rdir1 <- paste(rdir1, "/", temp1[1], sep = '')
                         rdir1 <- paste(rdir1, '.asc', sep = '')
                         PhyPa <- raster(rdir1)
                         #rdir2 <- 'R:/SEER_Lab/Griffin_GG19/GARP_test/m_arvalis/run1/GARPrun/run8_10'
@@ -136,7 +136,7 @@ extractRules <- function(file, table, pathA, pathB, project){
                         rdir2 <- rsetPridir
                         files <- list.files(rdir2, pattern = 'grid')
                         for (y in seq(1:length(files))) {
-                          rdir2_1 <- paste(rdir2, files[y], sep = '')
+                          rdir2_1 <- paste(rdir2,"/", files[y],"/",files[y], sep = '')
                           rdir2_1 <- paste(rdir2_1, '/', sep = '')
                           rfiles <-
                             list.files(rdir2_1, pattern = 'rset_\\d+_0')
@@ -154,8 +154,8 @@ extractRules <- function(file, table, pathA, pathB, project){
                                   zonal(PhyPa, rsetRa, 'min')
                                 ZonalMax <-
                                   zonal(PhyPa, rsetRa, 'max')
-                                for (z in seq(1:length(ZonalMin$zones))) {
-                                  if (ZonalMin$zones[z] == ruleset[a]) {
+                                for (z in seq(1:length(ZonalMin[,1]))) {
+                                  if (ZonalMin[z,1] == ruleset[a]) {
                                     RuleName <- append(RuleName, temp1[1])
                                     RuleType <-
                                       append(RuleType, "logit")
@@ -164,9 +164,9 @@ extractRules <- function(file, table, pathA, pathB, project){
                                     RuleNumber <-
                                       append(RuleNumber, ruleset[a])
                                     Minimum <-
-                                      append(Minimum, ZonalMin$min[z])
+                                      append(Minimum, ZonalMin[z,2])
                                     Maximum <-
-                                      append(Maximum, ZonalMax$max[z])
+                                      append(Maximum, ZonalMax[z,2])
                                   }
                                 }
 
@@ -254,7 +254,7 @@ extractRules <- function(file, table, pathA, pathB, project){
                         rdir2 <- rsetPridir
                         files <- list.files(rdir2, pattern = 'grid')
                         for (y in seq(1:length(files))) {
-                          rdir2_1 <- paste(rdir2, files[y], sep = '')
+                          rdir2_1 <- paste(rdir2,"/", files[y],"/",files[y], sep = '')
                           rdir2_1 <- paste(rdir2_1, '/', sep = '')
                           rfiles <-
                             list.files(rdir2_1, pattern = 'rset_\\d+_0')
@@ -269,14 +269,14 @@ extractRules <- function(file, table, pathA, pathB, project){
                                 rsetRa <- paste(rdir2_1, rfiles[w], sep = '')
                                 rsetRa <- raster(rsetRa)
                                 ZonalMin <-
-                                  ZonalStat(PhyPa, rsetRa, 'min')
+                                  zonal(PhyPa, rsetRa, 'min')
                                 ZonalMax <-
-                                  ZonalStat(PhyPa, rsetRa, 'max')
-                                for (z in seq(1:length(ZonalMin$zones))) {
-                                  if (ZonalMin$zones[z] == ruleset[a]) {
-                                    Minimum <- append(Minimum, ZonalMin$min[z])
+                                  zonal(PhyPa, rsetRa, 'max')
+                                for (z in seq(1:length(ZonalMin[,1]))) {
+                                  if (ZonalMin[z,1] == ruleset[a]) {
+                                    Minimum <- append(Minimum, ZonalMin[z,2])
                                     Maximum <-
-                                      append(Maximum, ZonalMax$max[z])
+                                      append(Maximum, ZonalMax[z,2])
                                     RuleName <-
                                       append(RuleName, temp1[1])
                                     RuleType <-
