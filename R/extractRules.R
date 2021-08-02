@@ -122,8 +122,6 @@ extractRules <- function(file, table, pathA, pathB, project){
                     if (grepl("\\*", ruleset[n]) == TRUE) {
                       temp1 <- strsplit(ruleset[n], "\\*")[[1]]
                       if (as.numeric(temp1[2]) != 0) {
-                        #rdir1 <- 'R:/SEER_Lab/Griffin_GG19/GARP_test/m_arvalis/run1/ASCII/Sampling_area' #Dir on Mac
-                        #rdir1 <- 'C:/Users/yangann1/Dropbox/yang_python/ruleset_writing/Grids'  #Dir on Win
                         #rdir1 <- paste(sampledir, '/',sep = '')
                         rdir1 <- sampledir
                         rdir1 <- paste(rdir1, "/", temp1[1], sep = '')
