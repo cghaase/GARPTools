@@ -3,7 +3,7 @@
 #' \code{prevalence} Calculate the prevalence of each environmental covariate in the ruleset file
 #'
 #' @param pathA a vector object that contains the full file names for the extracted rule .csv files created by \code{\link{extractRules}}
-#' @param pathB the primary directory for ruleset grids
+#' @param pathB the primary directory for resampled environmental layers
 #' @param num numeric; the total number of dominant presence rules; can be generated from \code{\link{totPresRules}}
 #'
 #' @return A table recording the prevalence of each environmental covariate.

@@ -33,7 +33,7 @@ findModRules <- function(pathA,pathB){
         best <- regmatches(bslist[j], regexpr("\\d+", bslist[j]))
         best <- as.numeric(best)
         for (l in 1:length(rsetlist)){
-          rsetdir <- paste(rsetPridir,rsetlist[l],sep = '')
+          rsetdir <- paste(rsetPridir,"/",rsetlist[l],"/",rsetlist[l],sep = '')
           rsetFile <- list.files(path = rsetdir, pattern = 'rset_\\d+_0')
           for (k in 1:length(rsetFile)){
             if (grepl('\\.[a-z]',rsetFile[k])==FALSE){
@@ -45,24 +45,24 @@ findModRules <- function(pathA,pathB){
                 rsetRa <- paste(rsetRa, rsetFile[k], sep = '')
                 rsetRa <- raster(rsetRa)
                 dbf <- zonal(rsetRa,rsetRa,'mean')
-                dbf<-dbf[order(-dbf$length),]
+                dbf<-dbf[order(-dbf[,2]),]
                 dbf<-data.frame(dbf)
                 time=0
                 total=0
-                for (m in 1:length(dbf$length)){
-                  total=total+dbf$length[m]
-                  if (total<=0.9*sum(dbf$length)){
-                    if (dbf$zones[m] != 0){
+                for (m in 1:length(dbf$mean)){
+                  total=total+dbf$mean[m]
+                  if (total<=0.9*sum(dbf$mean)){
+                    if (dbf$zone[m] != 0){
                       #print (dbf$zones[m])
                       bestmodel<-append(bestmodel,best)
-                      BestRules<-append(BestRules,as.numeric(paste(dbf$zones[m])))
+                      BestRules<-append(BestRules,as.numeric(paste(dbf$zone[m])))
                     }
                   }else {
                     time=time+1
                     if (time == 1){
-                      if (dbf$zones[m] != 0){
+                      if (dbf$zone[m] != 0){
                         bestmodel<-append(bestmodel,best)
-                        BestRules<-append(BestRules,as.numeric(paste(dbf$zones[m])))
+                        BestRules<-append(BestRules,as.numeric(paste(dbf$zone[m])))
                       }
                     }
                   }

@@ -9,7 +9,7 @@ prevalence(pathA, pathB, num)
 \arguments{
 \item{pathA}{a vector object that contains the full file names for the extracted rule .csv files created by \code{\link{extractRules}}}
 
-\item{pathB}{the primary directory for ruleset grids}
+\item{pathB}{the primary directory for resampled environmental layers}
 
 \item{num}{numeric; the total number of dominant presence rules; can be generated from \code{\link{totPresRules}}}
 }

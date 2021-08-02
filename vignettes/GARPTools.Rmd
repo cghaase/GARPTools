@@ -143,9 +143,9 @@ The area under the receiver operating characteristic (ROC) curve (AUC) can be ca
 ## 3.1. Sum best subset models into a single prediction raster
 Collapsing the 10 individual binary presence/absence ESRI grids from the BestSubsets folder of the projected distribution from a single GARP experiment creates a summed raster that represents the number of models that agree on the presence of a species for each pixel. 
 
-We have provided an example output from GARP in a "BestSubsets". We can sum the best subset model outputs into a single summed raster using the `sumRasters` function:
+We have provided an example output from GARP in a "tasks" folder. We can sum the best subset model outputs into a single summed raster using the `sumRasters` function:
 ```{r comment = "R>"}
-r.sum <- sumRasters(system.file("extdata/BestSubsets/", package="GARPTools"))
+r.sum <- sumRasters(system.file("extdata/tasks/", package="GARPTools"))
 ```
 The `summary` of the summed raster shows that the minimum value is 0 and the maximum is 10:
 
@@ -219,43 +219,36 @@ There are four types (range, negated range, logit and atomic) of if-then genetic
 ## 4.1. Get the dominant rules for best subsets
 Dominant rules for each model are defined as the subset of rules that together predict over 90% of the landscapes. The `findModRules` function is used to extract a table of dominant rules for the best subsets.
 
-First define a vector object which contains the directories of best subsets for each species and a string of the primary directory for ruleset grids, then run the function:
+First define a path (`pathA`) which contains the directories of for ruleset grids produced by GARP (e.g., folders containing the term "grid") and a path (`pathB`) that contains the directories for the best subsets for each species (e.g. folders containing the term "task"), then run the function:
 
-```{r eval = FALSE, comment = "R>"}
-<<<<<<< HEAD
-modelRule <- findModRules(pathA = "C:/GARP/runs/", pathB = "C:/GARP/BestSubsets/")
-=======
-modelRule <- FindModRule(pathA = "~/runs/", pathB = "~/BestSubsets/")
->>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
+```{r comment = "R>"}
+modelRule <- findModRules(pathA = system.file("extdata/runs/", package="GARPTools"), 
+                          pathB = system.file("extdata/BestSubsets/", package="GARPTools"))
 ```
 
 ## 4.2. Extract dominant rules for the best subset models from Desktop GARP
-Set the directory to where the rule sets .txt file is saved and define the directory for environmental layers. The Boolean argument "project" depends on whether the GARP results are projected to the landscape or not. The `extractRules` function will extract the dominant range rules and logit rules for each GARP model. Argument `table` is produced by `findModRules`. **Note:** The environmental layers must be in ESRI ASCII raster format.
+Set the directory to where the rule sets .txt file is saved (`file`) and define the directory for environmental layers. The Boolean argument "project" depends on whether the GARP results are projected to the landscape or not. The `extractRules` function will extract the dominant range rules and logit rules for each GARP model. Argument `table` is produced by `findModRules`. **Note:** The environmental layers must be in ESRI ASCII raster format.
 
-```{r eval = FALSE, comment = "R>"}
-<<<<<<< HEAD
-rangelogit <- extractRules("C:/GARP/RuleSets.txt", 
-=======
-rangelogit <- ExtractRules("~/RuleSets.txt", 
->>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
-                           table = modelRule, 
-                           pathA = "~/resampled/", 
-                           pathB = "~/runs/",
-                           project = FALSE) 
+```{r comment = "R>"}
+rangelogit <- extractRules(file = system.file("extdata/RuleSets.txt", package="GARPTools"),
+                           table = modelRule,
+                           pathA = system.file("extdata/resampled/", package="GARPTools"),
+                           pathB = system.file("extdata/runs/", package="GARPTools"),
+                           project = FALSE)
 ```
 
 Save the table of extracted rules as a .csv file:
 
-```{r eval = FALSE, comment = "R>"}
-write.csv(rangelogit, "~/RangeLogit.csv") 
+```{r comment = "R>"}
+write.csv(rangelogit, paste(system.file(package = "GARPTools"), "/extdata/RangeLogit.csv", sep=""))
 ```
 
 ## 4.3. Calculate the median maximum and median minimum values for each environmental variable
 Set a vector object the directories and full file names for the extracted rule .csv files created by function `extractRules`. The `getMedMinMax` function is used to get the median maximum and minimum of each environmental variable for dominant rules:
 
-```{r eval = FALSE, comment = "R>"}
-MedMinMax <- getMedMinMax(pathA = "~/RangeLogit.csv", 
-                          pathB = "~/resampled/") 
+```{r comment = "R>"}
+MedMinMax <- getMedMinMax(pathA = system.file("extdata/RangeLogit.csv", package="GARPTools"), 
+                          pathB = system.file("extdata/resampled/", package="GARPTools")) 
 ```
 
 ## 4.4. Rescale the median maximum and median minimum values from 0.0 to 1.0
@@ -263,14 +256,14 @@ The median range of the environmental variables indicates the role they play to 
 
 The argument `file` in the `rescale` function is a  data.frame of the original median minimum and median maximum values produced by the `getMedMinMax` function for each environment variable:
 
-```{r eval = FALSE, comment = "R>"}
-recaledM <- rescale(MedMinMax) 
+```{r comment = "R>"}
+rescaledM <- rescale(MedMinMax) 
 ```
 
 ## 4.5. Visualize the median range for the environmental variables
 The `plotRange` function plots the median range for the environmental variables used in the GARP experiments. The argument `file` in the function should b a data.frame of the rescaled ranges of the median minimum and median maximum values for each environment variable, which can be produced by `rescale` function:
 
-```{r eval = FALSE, comment = "R>"}
+```{r comment = "R>"}
 plotRange(rescaledM, colour = "purple", n = 15, 
           xlabel = "Environmental Varibles", 
           ylabel = "Median Range")
@@ -289,34 +282,28 @@ The multiplication of the median range and the absence of the environmental laye
 ## 5.1 Calculate the total number of the dominant presence rules in the ruleset 
 Set the directory to where the rule sets .txt file is saved. Set pathA as a string of the directory for environmental layers and pathB as a string of the primary directory for ruleset grids. The Boolean argument `project` depends on whether the GARP results are projected to the landscape or not.  The `totPresRules` function will return the total number of the dominant presence rules in the ruleset file. The argument "table" is produced by `findModRules` function. **Note:** the environmental layers must be in ESRI ASCII raster format.
 
-```{r eval = FALSE, comment = "R>"}
-<<<<<<< HEAD
-PreNo <- totPresRules(file = "C:/GARP/RuleSets.txt", 
-=======
-PreNo <- TotPresRules(file = "~/RuleSets.txt", 
->>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
-                      table = modelRule, 
-                      pathA = "~/resampled/", 
-                      pathB = "~/runs/", 
-                      project = FALSE)
+```{r comment = "R>"}
+PreNo <- totPresRules(file = system.file("extdata/RuleSets.txt", package="GARPTools"),
+                      table = modelRule,
+                      pathA = system.file("extdata/resampled/", package="GARPTools"),
+                      pathB = system.file("extdata/runs/", package="GARPTools"),
+                      project = FALSE) 
+
 ```
 
 ## 5.2 Get the prevalence of each environmental variable
 The prevalence indicates the frequency of each environmental variable shown in the dominant presence rules of the ten best subsets. Set `pathA` as a vector object the directories and full file names for the extracted rule .csv files created by function `extractRules`.  Set `pathB` as a string of the directory for environmental layers and `num` as the number of total dominant presence rules which can be generated by the `totPresRules` function. The `prevalence` function will return a data frame including the prevalence of each environmental variable in the dominant presence rules in the ten best subsets. **Note:** the environmental layers must be in ESRI ASCII raster format.
 
-```{r eval = FALSE, comment = "R>"}
-<<<<<<< HEAD
-prevalence <- prevalence(pathA = "C:/GARP/RuleSets.txt", 
-                         pathB = "C:/GARP/runs/", num = 10)
-=======
-prevalence <- Prevalence(pathA = "~/RuleSets.txt", 
-                         pathB = "~/runs/", num = 10)
->>>>>>> a50045bd9dfc6a3b128bcd585bc85194afa8d4f7
+```{r comment = "R>"}
+
+prevalence <- prevalence(pathA = paste(system.file(package = "GARPTools"), "/extdata/RangeLogit.csv", sep=""), 
+                         pathB = system.file("extdata/resampled/", package="GARPTools"),
+                         num = 10)
 ```
 
 Save the table of the prevalence for environmental covariates as a .csv file:
-```{r eval = FALSE, comment = "R>"}
-write.csv(prevalence, "~/Prevalence.csv")
+```{r comment = "R>"}
+write.csv(prevalence, paste(system.file(package = "GARPTools"), "/extdata/Prevalence.csv", sep=""))
 ```
 
 
@@ -325,13 +312,13 @@ The normalized unimportance index is calculated based on the analysis of median 
 
 Set `table1` as a data frame recording the prevalence of environmental variables generated by `prevalence` function and `table2` as a data frame with the rescaled median range for each environment variable generated by `Rescale` function. The `unimportIdx` function will calculate the normalized unimportance index for each environmental variable.
 
-```{r eval = FALSE, comment = "R>"}
-UnimportIndex <- unimportIdx(prevalence, rescaled)
+```{r comment = "R>"}
+UnimportIndex <- unimportIdx(prevalence, rescaledM)
 ```
 
 Save the table of Unimportance Index as a .csv file:
-```{r eval = FALSE, comment = "R>"}
-write.csv(UnimportanceIndex,"~/UnimportanceIndex.csv")
+```{r comment = "R>"}
+write.csv(UnimportIndex, paste(system.file(package = "GARPTools"), "/extdata/UnimportanceIndex.csv", sep=""))
 ```
 
 

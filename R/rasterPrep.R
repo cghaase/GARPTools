@@ -16,6 +16,7 @@
 #'
 #' @import raster
 #' @import sp
+#' @import RSAGA
 #'
 #' @export
 
@@ -112,12 +113,13 @@ rasterPrep <- function(file.path, res.raster = NULL, cells = NULL, mask = NULL, 
       #Resample and output as .asc file
       r.crop <- crop(r, extent(mask), snap = "out")
       r.crop <- mask(r.crop, mask = mask)
-      r <- resample(r.crop, max.raster, overwrite=TRUE, filename = paste(output.path, name, "_resample.asc", sep=""))
-    } else{r <- resample(r, max.raster, overwrite=TRUE, filename = paste(output.path, name, "_resample.asc", sep=""))
+      r <- resample(r.crop, max.raster, overwrite=TRUE, filename = paste(output.path,"/", name, "_resample.asc", sep=""))
+    } else{r <- resample(r, max.raster, overwrite=TRUE, filename = paste(output.path, "/",name, "_resample.asc", sep=""))
     }
 
     #Re-read back in for correct format for GARP
-    # r <- raster(paste(output.path, name, "_resample.asc", sep=""))
-    # write.asciigrid(r, paste(output.path, name, "_resample.asc", sep=""))
+    r <- read.ascii.grid(paste(output.path,"/", name, "_resample.asc", sep=""))
+    write.ascii.grid(data = r,
+                     file = paste(output.path, "/", name, "_resample.asc", sep=""))
   }
 }
